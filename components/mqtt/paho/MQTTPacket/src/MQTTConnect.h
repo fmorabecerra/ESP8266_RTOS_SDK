@@ -103,7 +103,7 @@ typedef struct
 	char struct_id[4];
 	/** The version number of this structure.  Must be 0 */
 	int struct_version;
-	/** Version of MQTT to be used.  3 = 3.1 4 = 3.1.1
+	/** Version of MQTT to be used.  3 = 3.1, 4 = 3.1.1
 	  */
 	unsigned char MQTTVersion;
 	MQTTString clientID;
