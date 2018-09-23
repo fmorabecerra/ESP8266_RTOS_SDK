@@ -29,6 +29,7 @@
 #include "freertos/event_groups.h"
 
 #include "MQTTClient.h"
+#include "driver/gpio.h"
 
 /* The examples use simple WiFi configuration that you can set via
    'make menuconfig'.
@@ -55,6 +56,14 @@ const int CONNECTED_BIT = BIT0;
 #define MQTT_CLIENT_THREAD_PRIO         8
 
 static const char *TAG = "example";
+
+// Adding GPIO Declarations. Input/output pin definition here.
+#define GPIO_OUTPUT_IO_0    14
+#define GPIO_OUTPUT_IO_1    16
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<<GPIO_OUTPUT_IO_0) | (1ULL<<GPIO_OUTPUT_IO_1))
+#define GPIO_INPUT_IO_0     4
+#define GPIO_INPUT_IO_1     5
+#define GPIO_INPUT_PIN_SEL  ((1ULL<<GPIO_INPUT_IO_0) | (1ULL<<GPIO_INPUT_IO_1))
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
@@ -100,10 +109,57 @@ static void initialise_wifi(void)
 static void messageArrived(MessageData* data)
 {
     printf("Message arrived: %s\n", (char*)data->message->payload);
+
+    // Check if arrived message is lamp command
+    if(strcmp("on_",(char*)data->message->payload) == 0){
+      // Turn on lamp. Hold mode.
+      gpio_set_level(GPIO_OUTPUT_IO_0, 1);
+      gpio_set_level(GPIO_OUTPUT_IO_1, 0);
+    }else if(strcmp("fad",(char*)data->message->payload) == 0){
+      // Turn on lamp. Fading mode.
+      gpio_set_level(GPIO_OUTPUT_IO_0, 0);
+      gpio_set_level(GPIO_OUTPUT_IO_1, 1);
+    }else if(strcmp("off",(char*)data->message->payload) == 0){
+      // Explicitly turn off lamp
+      gpio_set_level(GPIO_OUTPUT_IO_0, 1);
+      gpio_set_level(GPIO_OUTPUT_IO_1, 1);
+    }else{
+      // Do nothting
+    }
+
+    strcpy((char*)data->message->payload, "tmp");
 }
 
 static void mqtt_client_thread(void* pvParameters)
 {
+    gpio_config_t io_conf;
+    //disable interrupt
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    //set as output mode
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    //bit mask of the pins that you want to set,e.g.GPIO15/16
+    io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+    //enable pull-down mode
+    io_conf.pull_down_en = 1;
+    //disable pull-up mode
+    io_conf.pull_up_en = 0;
+    //configure GPIO with the given settings
+    gpio_config(&io_conf);
+
+    // Set default action.
+    gpio_set_level(GPIO_OUTPUT_IO_0, 1);
+    gpio_set_level(GPIO_OUTPUT_IO_1, 1);
+
+    //interrupt of rising edge
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    //bit mask of the pins, use GPIO4/5 here
+    io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
+    //set as input mode
+    io_conf.mode = GPIO_MODE_INPUT;
+    //enable pull-up mode
+    io_conf.pull_up_en = 1;
+    gpio_config(&io_conf);
+
     MQTTClient client;
     Network network;
     unsigned char sendbuf[80], readbuf[80] = {0};
