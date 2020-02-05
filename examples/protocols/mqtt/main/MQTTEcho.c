@@ -48,7 +48,7 @@ static EventGroupHandle_t wifi_event_group;
    to the AP with an IP? */
 const int CONNECTED_BIT = BIT0;
 
-#define MQTT_BROKER  "iot.eclipse.org"  /* MQTT Broker Address*/
+#define MQTT_BROKER  "192.168.0.138"  /* MQTT Broker Address*/
 #define MQTT_PORT    1883             /* MQTT Port*/
 
 #define MQTT_CLIENT_THREAD_NAME         "mqtt_client_thread"

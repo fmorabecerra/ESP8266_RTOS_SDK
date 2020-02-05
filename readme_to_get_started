@@ -1,0 +1,17 @@
+To start
+source ./path/to/source/file
+
+configure project. including wifi:
+make menuconfig
+
+to build
+make all
+
+build and flash
+make flash
+
+to monitor
+make monitor
+
+build, monitor, and flash
+make flash monitor
