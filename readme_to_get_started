@@ -15,3 +15,11 @@ make monitor
 
 build, monitor, and flash
 make flash monitor
+
+# Stuff to interact with LED lamp
+## Monitor Heart beat:
+mosquitto_sub -h 192.168.0.138 -t ESP8266/sample/pub
+## Contro LEDs
+mosquitto_pub -h 192.168.0.138 -t ESP8266/sample/sub -m on_  # Turn LEDs on. Hold color
+mosquitto_pub -h 192.168.0.138 -t ESP8266/sample/sub -m off  # Turn LEDs off
+mosquitto_pub -h 192.168.0.138 -t ESP8266/sample/sub -m fad  # Turn LEDs on and fade into different colors.
